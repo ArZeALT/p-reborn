@@ -20,7 +20,7 @@ $whitelistPatterns = array(
 );
 
 //To enable CORS (cross-origin resource sharing) for proxied sites, set $forceCORS to true.
-$forceCORS = false;
+$forceCORS = true;
 
 //Set to false to report the client machine's IP address to proxied sites via the HTTP `x-forwarded-for` header.
 //Setting to false may improve compatibility with some sites, but also exposes more information about end users to proxied sites.
@@ -94,7 +94,12 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) == true) {
 	  $_SERVER["SERVER_PORT"] = 443;
   }
 }
-	
+
+if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+	  $_SERVER["HTTPS"] = true;
+	  $_SERVER["SERVER_PORT"] = 443;
+}
+
 $usingDefaultPort =  (!isset($_SERVER["HTTPS"]) && $_SERVER["SERVER_PORT"] === 80) || (isset($_SERVER["HTTPS"]) && $_SERVER["SERVER_PORT"] === 443);
 $prefixPort = $usingDefaultPort ? "" : ":" . $_SERVER["SERVER_PORT"];
 //Use HTTP_HOST to support client-configured DNS (instead of SERVER_NAME), but remove the port if one is present
@@ -331,7 +336,8 @@ $responseURL = $responseInfo["url"];
 if ($responseURL !== $url) {
   if (strrpos($responseURL, "googlevideo.com") == true) {
     header("Location: " . $responseURL, true);
-  } else {
+  }
+  else {
   header("Location: " . PROXY_PREFIX . $responseURL, true);
   }
   exit(0);
